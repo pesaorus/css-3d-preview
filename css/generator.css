@@ -1,0 +1,158 @@
+/*Basic Reset*/
+* {margin: 0; padding: 0;}
+
+body {
+    /* overflow: hidden; */
+    color:white;
+    font: 0.92em/1.4 Verdana, Arial, sans-serif
+}
+
+
+
+h1 {
+    color: white;
+    width: 500px;
+    padding: 50px;
+}
+
+h2 {
+    font-weight: normal;
+    margin-bottom:1em;
+}
+
+p {
+    margin-bottom: 2em
+}
+
+.prev-container {
+    background: #19c4eb;
+    overflow: hidden;
+    color:white;
+    
+    position: absolute;
+    top:0;
+    bottom:0;
+    left: 0;
+    right: 0;
+
+    -webkit-perspective: 1000px;
+    -moz-perspective: 1000px;
+    perspective: 1000;
+}
+
+.grid {
+    position: absolute; 
+    top: 40px; 
+    left: 200px;
+    width: 500px;
+
+    -webkit-transform: rotateX(30deg) rotateZ(-40deg);
+    transform: rotateX(30deg) rotateZ(-40deg);
+
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+}
+.grid li {
+    height: 370px; width: 370px;
+    float: left; margin: 20px;
+    list-style-type: none;
+    background-size: 0, cover;
+
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+}
+
+.grid li:before, .grid li:after {
+    content: '';
+    position: absolute;
+    /*100% height and width*/
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: inherit;
+    background-size: cover;
+}
+
+.grid li:before {
+    -webkit-transform-origin:left center;
+    transform-origin: left center;
+
+    -webkit-transform: rotateY(90deg);
+    transform: rotateY(90deg);
+
+    width: 5px;
+}
+
+.grid li:after {
+    -webkit-transform-origin:bottom center;
+    transform-origin: bottom center;
+
+    -webkit-transform: rotateX(90deg);
+    transform: rotateX(90deg);
+
+    height: 5px; 
+    top: auto; 
+    bottom: 0;
+
+    background-position: bottom center;
+}
+
+.shadow {
+    position: absolute;
+
+    top: 30px; 
+    left: 30px; 
+    right: 30px; 
+    bottom: 30px;
+
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 30px 30px rgba(0, 0, 0, 0.5);
+
+    -webkit-transform: translateZ(-50px);
+    transform: translateZ(-50px);
+}
+
+.preview {
+    background: 
+        linear-gradient(45deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5)), 
+        url("http://scr1.templatemonster.com/47900/47929-med.jpg");
+}
+
+.hidden-image {visibility: hidden}
+
+.controls {
+
+    padding:2em;
+}
+.clearfix:after {
+    content:'';
+    clear:both;
+}
+
+.colomn {
+    float:left;
+    min-width: 220px;
+    margin-right: 2em
+}
+
+/* #canvas-container {position:absolute; top:100%;} */
+#hide-panel {
+    width:50px;
+    height:20px;
+    position:absolute;
+    top:-20px;
+    left:2em;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding:0 1em;
+    color:white;
+}
+
+#hide-panel a {
+    text-decoration: none;
+    color:white;
+}
+
+.footer {
+    position: absolute;
+    bottom:0; left:0; right:0;
+    background-color: rgba(0, 0, 0, 0.3);
+}
