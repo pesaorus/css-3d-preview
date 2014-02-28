@@ -1,13 +1,9 @@
-/*Basic Reset*/
 * {margin: 0; padding: 0;}
 
 body {
-    /* overflow: hidden; */
     color:white;
     font: 0.92em/1.4 Verdana, Arial, sans-serif
 }
-
-
 
 h1 {
     color: white;
@@ -133,7 +129,6 @@ p {
     margin-right: 2em
 }
 
-/* #canvas-container {position:absolute; top:100%;} */
 #hide-panel {
     width:50px;
     height:20px;

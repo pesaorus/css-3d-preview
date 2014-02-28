@@ -18,9 +18,6 @@ $(function() {
 
             $controlsPanel: $('.controls'),
             $controlsToggler: $('#hide-panel')
-
-            /* button to make a div - in PNG picture, so  */
-            /*$makePicture: $('#make-a-picture')*/
         };
 
     /**
@@ -53,7 +50,6 @@ $(function() {
     /**
      * Background color setter
      */
-
     var setBgColor = function(color) {
         jqElems.$previewBody.css({
             'background': color
@@ -123,7 +119,7 @@ $(function() {
 
                 $newImg.on('load', function() {
                     newDimensions = newImageSizes($(this));
-
+                    /* now our image is alive and we know it's dimensions */
                     jqElems.$image.css({
                         'width': newDimensions.width + 'px',
                         'height': newDimensions.height + 'px',
@@ -136,20 +132,6 @@ $(function() {
 
         createNewImage( newImageAddress );
     });
-
-    /**
-     * Make a picture functionality
-     *
-     */
-    /*jqElems.$makePicture.on('click', function() {
-        html2canvas(document.body, {
-            onrendered: function(canvas) {
-                console.log(canvas);
-                document.getElementById('canvas-container').appendChild(canvas);
-            }
-        });
-    });*/
-
 
     /**
      * Show or hide control panel
