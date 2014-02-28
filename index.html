@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <title>test</title>
 <script src="http://yandex.st/jquery/1.11.0/jquery.min.js"></script>
+<script src="libs/html2canvas.js"></script>
+<script src="libs/colorPicker.js"></script>
+<link href="css/colorPicker.css" media="all" rel="stylesheet" type="text/css">
+<!-- <script src="http://yandex.st/jquery-ui/1.10.4/jquery-ui.min.js"></script>
+<script src="libs/iris/dist/iris.min.js"></script> -->
 <style>
 
 
@@ -11,9 +16,9 @@
 * {margin: 0; padding: 0;}
 
 body {
-    background: #333;
-    overflow: hidden;
+    /* overflow: hidden; */
     color:white;
+    font: 0.92em/1.4 Verdana, Arial, sans-serif
 }
 
 
@@ -24,12 +29,17 @@ h1 {
     padding: 50px;
 }
 
+h2 {
+    font-weight: normal;
+    margin-bottom:1em;
+}
+
 p {
     margin-bottom: 2em
 }
 
 .prev-container {
-    background: #333;
+    background: #19c4eb;
     overflow: hidden;
     color:white;
     
@@ -39,9 +49,9 @@ p {
     left: 0;
     right: 0;
 
-    -webkit-perspective: 3000px;
-    -moz-perspective: 3000px;
-    perspective: 3000;
+    -webkit-perspective: 1000px;
+    -moz-perspective: 1000px;
+    perspective: 1000;
 }
 
 .grid {
@@ -50,8 +60,8 @@ p {
     left: 200px;
     width: 500px;
 
-    -webkit-transform: rotateX(60deg) rotateZ(-50deg);
-    transform: rotateX(60deg) rotateZ(-50deg);
+    -webkit-transform: rotateX(30deg) rotateZ(-40deg);
+    transform: rotateX(30deg) rotateZ(-40deg);
 
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
@@ -123,8 +133,42 @@ p {
 .hidden-image {visibility: hidden}
 
 .controls {
+
+    padding:2em;
+}
+.clearfix:after {
+    content:'';
+    clear:both;
+}
+
+.colomn {
+    float:left;
+    min-width: 220px;
+    margin-right: 2em
+}
+
+/* #canvas-container {position:absolute; top:100%;} */
+#hide-panel {
+    width:50px;
+    height:20px;
+    position:absolute;
+    top:-20px;
+    left:2em;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding:0 1em;
+    color:white;
+}
+
+#hide-panel a {
+    text-decoration: none;
+    color:white;
+}
+
+.footer {
     position: absolute;
-    bottom:30px; left:20px;
+    bottom:0; left:0; right:0;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 </style>
@@ -139,21 +183,53 @@ p {
     </ul>
 </div>
 
-<div class="controls">
-    <p>
-        Your image URL:<br>
-        <input type="text" id="preview-image" value="">
-    </p>
+<div class="footer">
+<div class="controls clearfix">
+    <div class="colomn">
+        <p>
+            Your image URL:<br>
+            <input type="text" id="preview-image" value="">
+        </p>
 
-    <p>
-        Perspective:<br>
-        <input type="text" id="body-perspective" value="3000"> px
-    </p>
-    <p>
-        Grid transforme:<br>
-        X: <input type="text" id="grid-x-transformer" value="60"> deg<br>
-        Z: <input type="text" id="grid-z-transformer" value="-50"> deg
-    </p>
+        <p>
+            Perspective:<br>
+            <input type="text" id="body-perspective" value="1000"> px
+        </p>
+    </div>
+
+    <div class="colomn">
+        <p>
+            Grid transforme:<br>
+            X: <input type="text" id="grid-x-transformer" value="30"> deg<br>
+            Z: <input type="text" id="grid-z-transformer" value="-40"> deg
+        </p>
+
+        <p>
+            Shadow position:<br>
+            Z: <input type="text" id="shadow-transform-z" value="-50"> px
+        </p>
+    </div>
+
+    <div class="colomn">
+        <p>
+            Background color:<br>
+            <input type="text" id="background-color" value="#19c4eb">
+        </p>
+        <!-- <p><input type="button" value="Make picture (PNG)" id="make-a-picture"></p> -->
+    </div>
+
+    <div class="colomn">
+        <h2>Simple CSS3 preview generator</h2>
+        <p>
+            Hello!<br>
+            My name is Alex and it's a simple CSS 3d picture generator.<br>
+            It can be interesting for you, if you are designer, or, for example, if you prepare a presentation.
+        </p>
+        <p>Any case, just cpecify your picture and make a screenshot!</p>
+        <p><a href="mailto:alexandr.deineko@gmail.com">alexandr.deineko@gmail.com</a></p>
+    </div>
+</div>
+<div id="hide-panel"><a href="#">hide</a></div>
 </div>
 
 <script>
@@ -168,10 +244,18 @@ p {
                 $gridTransformZ:$('#grid-z-transformer'),
 
                 $image: $('.preview'),
-                $imagePreview: $('#preview-image')
-            },
-            lastValues = {
+                $imagePreview: $('#preview-image'),
 
+                $shadow: $('.shadow'),
+                $shadowTransformZ: $('#shadow-transform-z'),
+
+                $backgroundColor: $('#background-color'),
+
+                $controlsPanel: $('.controls'),
+                $controlsToggler: $('#hide-panel')
+
+                /* button to make a div - in PNG picture, so  */
+                /*$makePicture: $('#make-a-picture')*/
             };
 
         /**
@@ -187,11 +271,49 @@ p {
             });
         });
 
+
+        /**
+         * Shadow Z pozition
+         */
+        jqElems.$shadowTransformZ.on('change input', function() {
+            var newShadowZ = $(this).val();
+
+            jqElems.$shadow.css({
+                '-webkit-transform': 'translateZ(' + newShadowZ + 'px)',
+                'transform': 'translateZ(' + newShadowZ + 'px)'
+            });
+        });
+
+
+        /**
+         * Background color setter
+         */
+
+        var setBgColor = function(color) {
+            jqElems.$previewBody.css({
+                'background': color
+            });
+        };
+        jqElems.$backgroundColor.colpick({
+            layout:'hex',
+            submit:0,
+            onChange:function(hsb, hex, rgb, el, bySetColor) {
+                // Fill the text box just if the color was set using the picker, and not the colpickSetColor function.
+                if(!bySetColor) $(el).val('#' + hex);
+                setBgColor( '#' + hex );
+            }
+        });
+        jqElems.$backgroundColor.on('change', function() {
+            setBgColor( $(this).val() );
+        });
+
+
         /**
          * Grid X and Z transform controls
          */
         $.each([jqElems.$gridTransformX, jqElems.$gridTransformZ], function(){
             $(this).on('change input', function() {
+                console.log('234');
                 var newTransformXValue = jqElems.$gridTransformX.val(),
                     newTransformZValue = jqElems.$gridTransformZ.val();
 
@@ -249,6 +371,33 @@ p {
 
             createNewImage( newImageAddress );
         });
+
+        /**
+         * Make a picture functionality
+         *
+         */
+        /*jqElems.$makePicture.on('click', function() {
+            html2canvas(document.body, {
+                onrendered: function(canvas) {
+                    console.log(canvas);
+                    document.getElementById('canvas-container').appendChild(canvas);
+                }
+            });
+        });*/
+
+
+        /**
+         * Show or hide control panel
+         *
+         */
+         jqElems.$controlsToggler.on('click', function(e){
+            var text = $(this).find('a').text();
+            console.log(text);
+            e.preventDefault();
+
+            jqElems.$controlsPanel.slideToggle('fast');
+            $(this).find('a').text( text === 'hide' ? 'show' : 'hide' );
+         });
     });
 </script>
 
