@@ -1,4 +1,7 @@
 $(function() {
+    'use strict';
+
+    /* All DOM elements */
     var jqElems = {
             $previewBody: $('#preview-container'),
             
@@ -18,19 +21,116 @@ $(function() {
 
             $controlsPanel: $('.controls'),
             $controlsToggler: $('#hide-panel')
-        };
+        },
+
+        methods = {
+            /**
+             * Sets perspective css3 z position
+             *
+             * @param {string} perspectiveValue - new perspective value, should be int
+             * @param {Object} $element - jquery element (container) to appent new perspective
+             */
+            setNewPerspective: function(perspectiveValue, $element) {
+                $element.css({
+                    '-webkit-perspective': perspectiveValue + 'px',
+                    '-moz-perspective': perspectiveValue + 'px',
+                    'perspective': perspectiveValue
+                });
+            },
+
+            /**
+             * Sets new shadow css3 z position
+             *
+             * @param {string} newZposition - new value of z-position, should be int
+             * @param {Object} $element - jquery element (shadow-container) to appent new z-position
+             */
+            setShadowZPosition: function(newZposition, $element) {
+                $element.css({
+                    '-webkit-transform': 'translateZ(' + newZposition + 'px)',
+                    'transform': 'translateZ(' + newZposition + 'px)'
+                });
+            },
+
+            /**
+             * Background color setter
+             *
+             * @param {String} newColor - new HEX color
+             * @param {Object} $element - jquery element (container) to appent new background color
+             */
+            setBgColor: function(newColor, $element) {
+                $element.css({
+                    'background': newColor
+                });
+            },
+
+            /**
+             * Sets new x and z transforms to $element
+             *
+             * @param {String} newXValue - new x transform value, should be int
+             * @param {String} newZValue - new z transform value, should be int
+             * @param {Object} $element - jquery element (container) to appent new x and z transform values
+             */
+            gridXandZTransform: function( newXValue, newZValue, $element ) {
+                var newTransformXValue = newXValue,
+                    newTransformZValue = newZValue;
+
+                $element.css({
+                    '-webkit-transform': 'rotateX(' + newTransformXValue + 'deg)' + ' rotateZ(' + newTransformZValue + 'deg)',
+                    'transform': 'rotateX(' + newTransformXValue + 'deg)' + ' rotateZ(' + newTransformZValue + 'deg)'
+                });
+            },
+
+            /**
+             * Gets image sizes (width and height)
+             *
+             * @param {Object} $img - jquery DOM img object
+             * @returns {Object} - $img width and height params
+             */
+            newImageSizes: function($img) {
+                return {
+                    width: $img.width(),
+                    height: $img.height()
+                };
+            },
+
+            /**
+             * Creating new invisible for client img element to get it`s sizes
+             *
+             * @param {String} imgAddress - new image address
+             * @param {Object} $element - image container jquery element
+             * @param {Object} $image - image jquery element
+             * @param {String} hiddenImagesClassName - class name for hidden image
+             * @returns {Object} dimensions - width and height if a new image
+             */
+            createNewImage: function(imgAddress, $element, $image, hiddenImagesClassName) {
+                /*killing all old elements*/
+                $( '.' + hiddenImagesClassName ).remove();
+
+                var $newImg = $('<img src="' + imgAddress + '" class="' + hiddenImagesClassName + '">'),
+                    newImageAddress = imgAddress,
+                    newDimensions;
+
+                $element.append($newImg);
+
+                $newImg.on('load', function() {
+                    newDimensions = methods.newImageSizes( $(this) );
+                    /* now our image is alive and we know it's dimensions */
+                    $image.css({
+                        'width': newDimensions.width + 'px',
+                        'height': newDimensions.height + 'px',
+                        'background': 'url("' + newImageAddress + '")'
+                    });
+
+                });
+            }
+        }; /* end of methods list */
+
 
     /**
      * Body perspective controls
      */
     jqElems.$bodyPerspectiveControl.on('change input', function() {
-        var newPerspectiveValue = $(this).val();
-
-        jqElems.$previewBody.css({
-            '-webkit-perspective': newPerspectiveValue + 'px',
-            '-moz-perspective': newPerspectiveValue + 'px',
-            'perspective': newPerspectiveValue
-        });
+        methods.setNewPerspective( /*new value*/$(this).val(), /*$element*/jqElems.$previewBody );
     });
 
 
@@ -38,50 +138,37 @@ $(function() {
      * Shadow Z pozition
      */
     jqElems.$shadowTransformZ.on('change input', function() {
-        var newShadowZ = $(this).val();
-
-        jqElems.$shadow.css({
-            '-webkit-transform': 'translateZ(' + newShadowZ + 'px)',
-            'transform': 'translateZ(' + newShadowZ + 'px)'
-        });
+        methods.setShadowZPosition( /* new z pos */$(this).val(), /* $element */jqElems.$shadow );
     });
 
 
+    /**
+     * Color picker (colorPicker.js) initialisation
+     * for background color setter.
+     */
+    jqElems.$backgroundColor.colpick({
+        layout: 'hex',
+        submit: 0,
+        onChange: function(hsb, hex, rgb, el, bySetColor) {
+            /*Fill the text box just if the color was set using the picker, and not the colpickSetColor function.*/
+            if ( !bySetColor ) $(el).val( '#' + hex );
+            methods.setBgColor( '#' + hex , jqElems.$previewBody );
+        }
+    });
     /**
      * Background color setter
      */
-    var setBgColor = function(color) {
-        jqElems.$previewBody.css({
-            'background': color
-        });
-    };
-    jqElems.$backgroundColor.colpick({
-        layout:'hex',
-        submit:0,
-        onChange:function(hsb, hex, rgb, el, bySetColor) {
-            // Fill the text box just if the color was set using the picker, and not the colpickSetColor function.
-            if(!bySetColor) $(el).val('#' + hex);
-            setBgColor( '#' + hex );
-        }
-    });
     jqElems.$backgroundColor.on('change', function() {
-        setBgColor( $(this).val() );
+        methods.setBgColor( $(this).val(), jqElems.$previewBody );
     });
 
 
     /**
-     * Grid X and Z transform controls
+     * Grid X and Z transformer
      */
     $.each([jqElems.$gridTransformX, jqElems.$gridTransformZ], function(){
         $(this).on('change input', function() {
-            console.log('234');
-            var newTransformXValue = jqElems.$gridTransformX.val(),
-                newTransformZValue = jqElems.$gridTransformZ.val();
-
-            jqElems.$grid.css({
-                '-webkit-transform': 'rotateX(' + newTransformXValue + 'deg)' + ' rotateZ(' + newTransformZValue + 'deg)',
-                'transform': 'rotateX(' + newTransformXValue + 'deg)' + ' rotateZ(' + newTransformZValue + 'deg)'
-            });
+            methods.gridXandZTransform( jqElems.$gridTransformX.val(), jqElems.$gridTransformZ.val(), jqElems.$grid );
         });
     });
 
@@ -91,58 +178,21 @@ $(function() {
      * that should be stored on the web
      */
     jqElems.$imagePreview.on('change input', function() {
-            /**
-             * Getting image new sizes
-             *
-             * @param img - jquery DOM img object
-             */
-        var newImageSizes = function(img) {
-                return {
-                    width: img.width(),
-                    height: img.height()
-                };
-            },
-            /**
-             * Creating new invisible for client img element to get it`s sizes
-             *
-             * @param {String} imgAddress - new image address
-             * @returns {Object} dimensions - width and height if a new image
-             */
-            createNewImage = function(imgAddress) {
-                /*killing all old elements*/
-                $('.hidden-image').remove();
-
-                var $newImg = $('<img src="' + imgAddress + '" class="hidden-image">'),
-                    newDimensions;
-
-                jqElems.$previewBody.append($newImg);
-
-                $newImg.on('load', function() {
-                    newDimensions = newImageSizes($(this));
-                    /* now our image is alive and we know it's dimensions */
-                    jqElems.$image.css({
-                        'width': newDimensions.width + 'px',
-                        'height': newDimensions.height + 'px',
-                        'background': 'url("' + newImageAddress + '")'
-                    });
-
-                });
-            },
-            newImageAddress = $(this).val();
-
-        createNewImage( newImageAddress );
+        methods.createNewImage( $(this).val(), jqElems.$previewBody, jqElems.$image, 'hidden-image' );
     });
+
 
     /**
      * Show or hide control panel
      *
      */
      jqElems.$controlsToggler.on('click', function(e){
-        var text = $(this).find('a').text();
-        console.log(text);
+        var $textContainer = $(this).find('a'),
+            text = $textContainer.text();
+
         e.preventDefault();
 
-        jqElems.$controlsPanel.slideToggle('fast');
-        $(this).find('a').text( text === 'hide' ? 'show' : 'hide' );
+        jqElems.$controlsPanel.slideToggle( 'fast' );
+        $textContainer.text( text === 'hide' ? 'show' : 'hide' );
      });
 });
